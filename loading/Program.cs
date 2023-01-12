@@ -15,10 +15,15 @@ namespace loading
 
         private const int KEYEVENTF_EXTENDEDKEY = 0x1;
         private const int KEYEVENTF_KEYUP = 0x2;
-        static void Main(string[] args)
-        {
 
-            ClearActive();
+        static ConsoleEventDelegate handler; 
+        private delegate bool ConsoleEventDelegate(int eventType);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
+        static void Main()
+        {
+            handler = new ConsoleEventDelegate(ConsoleEventCallback);
+            SetConsoleCtrlHandler(handler, true);
             while (true)
             {
                 ClearActive();
@@ -57,6 +62,15 @@ namespace loading
             keybd_event(key, 0x45, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
             keybd_event(key, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
             (UIntPtr)1);
+        }
+
+        static bool ConsoleEventCallback(int eventType)
+        {
+            if (eventType == 2)
+            {
+                ClearActive();
+            }
+            return false;
         }
     }
 }
